@@ -1,91 +1,114 @@
 #include <Arduino.h>
+#include <Encoder.h>
+#include <PID_v1.h>
+#define ROTATION 8256
+int E1 = 5;
+int M1 = 4;
+bool flag = true;
+Encoder knobLeft(2, 3);
+double Setpoint, Input, Output;
+void limitUp();
+void limitDown();
+void limitLeft();
+void limitRight();
+PID myPID(&Input, &Output, &Setpoint, .2, 0.1, 0.01, DIRECT);
 
-// #include <Encoder.h>
-// int E1 = 5;
-// int M1 = 4;
-// int E2 = 6;
-// int M2 = 7;
-// Encoder knobLeft(2, 3);
-// Encoder knobRight(7, 8);
-
-// #define LEFT 21
-// #define RIGHT 20
-// #define UP 19
-// #define DOWN 18
-
-
-// void setup()
-// {
-//   pinMode(M1, OUTPUT);
-//   Serial.begin(9600);
-//   Serial.println("TwoKnobs Encoder Test:");
-//   digitalWrite(M1, HIGH);
-//   analogWrite(E1, 50);
-//   pinMode(7, OUTPUT);
-//   attachInterrupt(digitalPinToInterrupt(18), test, RISING);
-// }
-
-// long positionLeft = -999;
-// long positionRight = -999;
-
-// void loop()
-// {
-//   long newLeft, newRight;
-//   newLeft = knobLeft.read();
-//   newRight = knobRight.read();
-//   // if (newLeft != positionLeft || newRight != positionRight)
-//   // {
-//   //   Serial.print("Left = ");
-//   //   Serial.print(newLeft);
-//   //   Serial.print(", Right = ");
-//   //   Serial.print(newRight);
-//   //   Serial.println();
-//   //   positionLeft = newLeft;
-//   //   positionRight = newRight;
-//   // }
-//   // if a character is sent from the serial monitor,
-//   // reset both back to zero.
-//   if (Serial.available())
-//   {
-//     Serial.read();
-//     Serial.println("Reset both knobs to zero");
-//     knobLeft.write(0);
-//     knobRight.write(0);
-//   }
-
-//   if (digitalRead(7) == HIGH)
-//   {
-//     //analogWrite(E1, 50);
-//     digitalWrite(M1, HIGH);
-//   }
-//   else
-//   {
-//     digitalWrite(M1, LOW);
-//   }
-// }
-
-
-// void test() {
-//   Serial.println("INTERRUPT LEFT");
-// }
-
-void blink();
-const byte ledPin = 13;
-const byte interruptPin = 18;
-volatile byte state = LOW;
-
-void setup() {
-  pinMode(ledPin, OUTPUT);
-  pinMode(interruptPin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(interruptPin), blink, CHANGE);
+void setup()
+{
+  pinMode(21, INPUT);
+  pinMode(20, INPUT);
+  pinMode(19, INPUT);
+  pinMode(18, INPUT);
+  Input = knobLeft.read();
+  Setpoint = ROTATION;
+  pinMode(M1, OUTPUT);
   Serial.begin(9600);
-  Serial.println("hello");
+  //digitalWrite(M1, HIGH);
+  //analogWrite(E1, 255);
+  myPID.SetMode(AUTOMATIC);
+  myPID.SetOutputLimits(-100, 100);
+  attachInterrupt(digitalPinToInterrupt(21), limitUp, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(20), limitDown, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(19), limitRight, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(18), limitLeft, CHANGE);
 }
 
-void loop() {
-  digitalWrite(ledPin, state);
-}
+long positionLeft = -999;
 
-void blink() {
-  Serial.println("INTERRUPT LEFT");
+void loop()
+{
+  while (flag)
+  {
+
+    Input = knobLeft.read();
+    myPID.Compute();
+
+    //     if (Input != positionLeft) {
+    // Serial.print("Encoder = ");
+    // Serial.print(Input);
+    // Serial.print("     PWM Speed = ");
+    // Serial.print(Output);
+
+    // positionLeft = Input;
+    //     }
+    //         Serial.print("     PWM Speed = ");
+    // Serial.print(Output);
+    // Serial.print("  Motor State = ");
+    if (Output < 0)
+    {
+      digitalWrite(M1, LOW);
+      // Serial.print(" Reverse ");
+    }
+    else
+    {
+      // Serial.print("  Forward ");
+      digitalWrite(M1, HIGH);
+    }
+
+    int OutputAbsolute = abs(Output);
+    // Serial.print("  PWM OUTPUT = ");
+    //   Serial.println(Output);
+    //   Serial.print("\n\n\n\n");
+    analogWrite(E1, OutputAbsolute);
+
+    Serial.print("Encoder = ");
+    Serial.print(knobLeft.read());
+    Serial.print("    error =  ");
+    Serial.print(Setpoint - knobLeft.read());
+    Serial.print("     output = ");
+    Serial.println(myPID.GetKp());
+  }
+
+  analogWrite(E1, 0);
+  Serial.print("KILL\n");
+  delay(99999);
+}
+void limitUp()
+{
+Serial.println("up hit");
+Serial.println("FLAG SET TO FALSE");
+  flag = false;
+  delay(50);
+}
+void limitLeft()
+{
+Serial.println("left hit");
+Serial.println("FLAG SET TO FALSE");
+  flag = false;
+    delay(50);
+}
+void limitDown()
+{
+Serial.println("down hit");
+Serial.println("FLAG SET TO FALSE");
+  flag = false;
+    delay(50);
+}
+void limitRight()
+{
+
+  Serial.println("right hit");
+  Serial.println("FLAG SET TO FALSE");
+  flag = false;
+    delay(50);
 }
