@@ -26,11 +26,11 @@ void setup()
   //digitalWrite(M1, HIGH);
   //analogWrite(E1, 255);
   myPID.SetMode(AUTOMATIC);
-  myPID.SetOutputLimits(-100, 100);
+  myPID.SetOutputLimits(-255, 255);
   attachInterrupt(digitalPinToInterrupt(21), limitUp, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(20), limitDown, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(19), limitRight, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(18), limitLeft, CHANGE);
+//  attachInterrupt(digitalPinToInterrupt(20), limitDown, CHANGE);
+//  attachInterrupt(digitalPinToInterrupt(19), limitRight, CHANGE);
+//  attachInterrupt(digitalPinToInterrupt(18), limitLeft, CHANGE);
 }
 
 long positionLeft = -999;
@@ -76,7 +76,8 @@ void loop()
     Serial.print("    error =  ");
     Serial.print(Setpoint - knobLeft.read());
     Serial.print("     output = ");
-    Serial.println(myPID.GetKp());
+    Serial.println(Output);\
+    delay(50);
   }
 
   analogWrite(E1, 0);
