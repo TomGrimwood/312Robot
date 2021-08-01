@@ -3,6 +3,7 @@
 #include <PID_v1.h>
 #include <functions.hpp>
 #include <Plotter.h>
+#include <PID_AutoTune_v0.h>
 
 #define ROTATION 8256
 
@@ -15,9 +16,12 @@ Plotter p;
 double Error;
 #endif
 
+PID_ATune aTune(&Input, &Output);
+
 int E1 = 5;
 int M1 = 4;
 bool flag = true;
+bool tuning = false;
 double Setpoint, Input, Output;
 
 PID myPID(&Input, &Output, &Setpoint, .2, 0.1, 0.01, DIRECT);
@@ -35,7 +39,7 @@ void setup()
   pinMode(M1, OUTPUT);
 
   myPID.SetMode(AUTOMATIC);
-  myPID.SetOutputLimits(-100, 100);
+  myPID.SetOutputLimits(-255, 255);
 
   attachInterrupt(digitalPinToInterrupt(21), limitUp, CHANGE);
   attachInterrupt(digitalPinToInterrupt(20), limitDown, CHANGE);
@@ -63,61 +67,85 @@ void setup()
 
 void loop()
 {
-  while (flag)
+  if (flag) //RUN if kill switch not enabled
   {
 
-    Input = knobLeft.read();
-    if (myPID.Compute())
+    Input = knobLeft.read(); //READ current encoder value
+
+    if (tuning) //IF tuning mode activated
     {
-
-      if (Output < 0)
+      byte val = (aTune.Runtime()); 
+      if (val != 0)
       {
-        digitalWrite(M1, LOW);
+        tuning = false;
       }
-      else
-      {
-        digitalWrite(M1, HIGH);
+      if (!tuning)
+      { //we're done, set the tuning parameters
+        int kp = aTune.GetKp();
+        int ki = aTune.GetKi();
+        int kd = aTune.GetKd();
+        myPID.SetTunings(kp, ki, kd);
+        Serial.print("Auto tune values Kp, Ki, Kd");
+        Serial.println(kp);
+        Serial.println(ki);
+        Serial.println(kd);
       }
-
-      analogWrite(E1, abs(Output));
-
-      if (SERIAL_PRINT)
-      {
-        Serial.print("Encoder = ");
-        Serial.print(Input);
-        Serial.print("  Error =  ");
-        Serial.print(Setpoint - Input);
-        Serial.print("  PWM Output = ");
-        Serial.println(Output);
-      }
-
-      if (ARDUINO_PLOTTER)
-      {
-        Serial.print("Min:0,");
-        Serial.print("Encoder");
-        Serial.print(map(Input, -10000, 10000, 0, 100));
-        Serial.print(",");
-        Serial.print("Error");
-        Serial.print(map((Setpoint - Input), -10000, 10000, 0, 100));
-        Serial.print(",");
-        Serial.print("PWM Output");
-        Serial.print(map(Output, -255, 255, 200, 300));
-        Serial.print(",");
-        Serial.println("Max:300");
-      }
-
-      #if EXTERNAL_PLOTTER
-      
-        p.Plot();
-      #endif
     }
+
+    else
+      myPID.Compute(); //Compute PID from library
+
+    if (Output < 0) //if output, from -255 to 255 is -ve
+    {
+      digitalWrite(M1, LOW); //M1 Low  = reverse motor
+    }
+    else
+    {
+      digitalWrite(M1, HIGH); //M1 High = forward motor
+    }
+
+    analogWrite(E1, abs(Output)); //Output PWM of abs value of output
+
+    if (SERIAL_PRINT)
+    {
+      Serial.print("Encoder = ");
+      Serial.print(Input);
+      Serial.print("  Error =  ");
+      Serial.print(Setpoint - Input);
+      Serial.print("  PWM Output = ");
+      Serial.println(Output);
+    }
+
+    if (ARDUINO_PLOTTER)
+    {
+      Serial.print("Min:0,");
+      Serial.print("Encoder");
+      Serial.print(map(Input, -10000, 10000, 0, 100));
+      Serial.print(",");
+      Serial.print("Error");
+      Serial.print(map((Setpoint - Input), -10000, 10000, 0, 100));
+      Serial.print(",");
+      Serial.print("PWM Output");
+      Serial.print(map(Output, -255, 255, 200, 300));
+      Serial.print(",");
+      Serial.println("Max:300");
+    }
+
+  #if EXTERNAL_PLOTTER
+
+    p.Plot();
+
+  #endif
   }
 
-  analogWrite(E1, 0);
-  delay(99999);
-
-  if (SERIAL_PRINT)
+  else
   {
-    Serial.print("KILL\n");
+    analogWrite(E1, 0);
+    delay(99999);
+
+    if (SERIAL_PRINT)
+    {
+      Serial.print("KILL\n");
+    }
   }
 }
