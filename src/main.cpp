@@ -3,76 +3,44 @@
 #include <PID_v1.h>
 #include <functions.hpp>
 
-
-#define ROTATION -8256
-
-#define SERIAL_PRINT 0
-
+#define ROTATION 5000
+#define SAMPLE_TIME 10 //minimum time till PID recalculates  the  output (MilliSeconds)
 
 double Setpoint, Input, Output;
 
 int E1 = 5;
-int M1 = 4; 
+int M1 = 4;
 int E2 = 6;
-int M2 = 7; 
+int M2 = 7;
 bool flag = true;
 
-PID myPID(&Input, &Output, &Setpoint, .2, 0.1, 0.01, DIRECT);
+PID myPID(&Input, &Output, &Setpoint, 3, 0, 0.1, DIRECT);
 Encoder knobLeft(2, 3);
 
 void setup()
 {
-  pinMode(21, INPUT); //UP KILL TRIGGER
-  pinMode(20, INPUT); //DOWN KILL TRIGGER
-  pinMode(19, INPUT); //RIGHT KILL TRIGGER
-  pinMode(18, INPUT); //LEFT KILL TRIGGER
+  Serial.begin(9600);
+  pinMode(LEFT_KILL_PIN, INPUT);
+  pinMode(RIGHT_KILL_PIN, INPUT);
+  pinMode(UP_KILL_PIN, INPUT);
+  pinMode(DOWN_KILL_PIN, INPUT);
 
-  Input = knobLeft.read();
-  Setpoint = .5*ROTATION;
-  pinMode(M1, OUTPUT);
-  pinMode(M2, OUTPUT);
+  pinMode(LEFT_DIRECTION_PIN, OUTPUT);
+  pinMode(RIGHT_DIRECTION_PIN, OUTPUT);
 
   myPID.SetMode(AUTOMATIC);
-  myPID.SetOutputLimits(-255, 255);
-
-
-  if (SERIAL_PRINT)
-  {
-    Serial.begin(9600);
-  }
-
+  myPID.SetOutputLimits(-DUTY_CYCLE_LIMIT, DUTY_CYCLE_LIMIT);
+  myPID.SetSampleTime(SAMPLE_TIME);
+  myPID.SetControllerDirection(1);
 }
 void loop()
 {
-  while (flag) //RUN if kill switch not enabled
-  {
+  
+  moveDistance(5000.0, HORIZONTAL);
+  moveDistance(-5000.0, HORIZONTAL);
+  // moveDistance(-100000.0, HORIZONTAL);
+  // moveDistance(-100000.0, VERTICAL);
+  // moveDistance(100000.0, VERTICAL);
+  delay(1000);
 
-    Input = knobLeft.read(); //READ current encoder value
-
-
-      myPID.Compute(); //Compute PID from library
-
-      moveRight(Output);
-
-    if (SERIAL_PRINT)
-    {
-      Serial.print("Encoder = ");
-      Serial.print(Input);
-      Serial.print("  Error =  ");
-      Serial.print(Setpoint - Input);
-      Serial.print("  PWM Output = ");
-      Serial.println(Output);
-    }
-
-    flag = !digitalRead(21);// || !digitalRead(18)// || !digitalRead(19) || !digitalRead(18);
-  }
-
-  analogWrite(E1, 0);
-  analogWrite(E2, 0);
-  delay(99999);
-
-  if (SERIAL_PRINT)
-  {
-    Serial.print("KILL\n");
-  }
 }
