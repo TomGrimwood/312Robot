@@ -2,7 +2,8 @@
 #include <Encoder.h>
 #include <PID_v1.h>
 #include <functions.hpp>
-
+#define CENTIMETRE 1852
+#define SQUARE_SIZE 3
 #define ROTATION 5000
 #define SAMPLE_TIME 10 //minimum time till PID recalculates  the  output (MilliSeconds)
 
@@ -19,7 +20,7 @@ Encoder knobLeft(2, 3);
 
 void setup()
 {
-  Serial.begin(9600);
+  //Serial.begin(9600);
   pinMode(LEFT_KILL_PIN, INPUT);
   pinMode(RIGHT_KILL_PIN, INPUT);
   pinMode(UP_KILL_PIN, INPUT);
@@ -35,12 +36,21 @@ void setup()
 }
 void loop()
 {
-  
-  moveDistance(5000.0, HORIZONTAL);
-  moveDistance(-5000.0, HORIZONTAL);
-  // moveDistance(-100000.0, HORIZONTAL);
-  // moveDistance(-100000.0, VERTICAL);
-  // moveDistance(100000.0, VERTICAL);
-  delay(1000);
 
+  moveDistance(SQUARE_SIZE * CENTIMETRE, HORIZONTAL);
+  moveDistance(-SQUARE_SIZE * CENTIMETRE, VERTICAL);
+  moveDistance(-SQUARE_SIZE * CENTIMETRE, HORIZONTAL);
+  moveDistance(SQUARE_SIZE * CENTIMETRE, VERTICAL);
+  delay(2000);
+
+  moveDistance(2 * SQUARE_SIZE * CENTIMETRE, HORIZONTAL);
+  moveDistance(-2 * SQUARE_SIZE * CENTIMETRE, VERTICAL);
+  moveDistance(-2 * SQUARE_SIZE * CENTIMETRE, HORIZONTAL);
+  moveDistance(2 * SQUARE_SIZE * CENTIMETRE, VERTICAL);
+  delay(2000);
+  moveDistance(2.5 * SQUARE_SIZE * CENTIMETRE, HORIZONTAL);
+  moveDistance(2.5 * -SQUARE_SIZE * CENTIMETRE, VERTICAL);
+  moveDistance(2.5 * -SQUARE_SIZE * CENTIMETRE, HORIZONTAL);
+  moveDistance(2.5 * SQUARE_SIZE * CENTIMETRE, VERTICAL);
+  delay(2000);
 }

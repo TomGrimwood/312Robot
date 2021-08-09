@@ -71,7 +71,7 @@ void moveDistance(double distance, bool isVertical)
 
         if (Input == encoderPrevious && abs(Setpoint - Input) < 50) //if The encoder reading has not changed in the last 300ms (STALLED), and the error is within 50 encoder readings of desired.
         {
-          Serial.print("Not ");
+          //Serial.print("Not ");
           break; //exit the while loop and finish the moveDistance function call
         }
         else
@@ -82,8 +82,8 @@ void moveDistance(double distance, bool isVertical)
     }
   }
 
-  Serial.println("Quit due to kill switch");
-  Serial.println(Setpoint - Input);
+  //Serial.println("Quit due to kill switch");
+  //Serial.println(Setpoint - Input);
   analogWrite(LEFT_PWM_PIN, 0);    //KILL motors as precaution when exiting function
   analogWrite(RIGHT_PWM_PIN, 0);
 }
