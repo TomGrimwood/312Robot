@@ -46,6 +46,14 @@ bool checkForMove(bool axis, bool direction) //Returns true if a given move comm
   return !digitalRead(value * 2 + 22); //if Pins 22 , 24, 26, 28 = LEFT RIGHT DOWN UP, it will poll the correct pin depending on intended direciton of motion
 }
 
+bool checkForAllMoves() //checks if any kill switches are triggered.
+{
+  return (!digitalRead(UP_KILL_PIN) &&
+          !digitalRead(LEFT_KILL_PIN) &&
+          !digitalRead(RIGHT_KILL_PIN) &&
+          !digitalRead(DOWN_KILL_PIN));
+}
+
 void moveDistance(double distance, bool isVertical)
 {
 
@@ -84,6 +92,56 @@ void moveDistance(double distance, bool isVertical)
 
   //Serial.println("Quit due to kill switch");
   //Serial.println(Setpoint - Input);
-  analogWrite(LEFT_PWM_PIN, 0);    //KILL motors as precaution when exiting function
+  analogWrite(LEFT_PWM_PIN, 0); //KILL motors as precaution when exiting function
   analogWrite(RIGHT_PWM_PIN, 0);
+}
+
+void centre()
+{
+
+  moveDistance(-30000, 0); //
+  moveDistance(-30000, 1);
+  //GO bottom left
+  moveDistance(15000, 0); //
+  moveDistance(15000, 1);
+  //go to middle ( need to be fine tuned. )
+  knobLeft.write(0);
+  knobRight.write(0);
+}
+
+void moveMotors()
+{
+
+  myPID.Compute();
+  myOtherPID.Compute();
+
+  if (OutputR > 0)
+  {
+    digitalWrite(RIGHT_DIRECTION_PIN, HIGH);
+  }
+  else
+  {
+    digitalWrite(RIGHT_DIRECTION_PIN, LOW);
+  }
+
+  if (Output > 0)
+  {
+    digitalWrite(LEFT_DIRECTION_PIN, HIGH);
+  }
+  else
+  {
+    digitalWrite(LEFT_DIRECTION_PIN, LOW);
+  }
+
+  if (checkForAllMoves())
+  {
+    analogWrite(LEFT_PWM_PIN, abs(Output));
+    analogWrite(RIGHT_PWM_PIN, abs(OutputR));
+  }
+
+  else
+  {
+     analogWrite(LEFT_PWM_PIN, 0);
+     analogWrite(RIGHT_PWM_PIN, 0);
+  }
 }
