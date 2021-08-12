@@ -9,7 +9,7 @@
 #define ROTATION 5000
 #define SAMPLE_TIME 1  //minimum time till PID recalculates  the  output (MilliSeconds)
 #define RESOLUTION 100 //amount of pos recalculations of circle;
-#define TRUE_FOR_CIRCLE 1;
+#define TRUE_FOR_CIRCLE 0
 
 double Setpoint, Input, Output;
 double SetpointR, InputR, OutputR;
@@ -27,7 +27,7 @@ Encoder knobRight(3, 4);
 void setup()
 {
 
-#if TRUE_FOR_CIRCLE == 1;
+#if TRUE_FOR_CIRCLE == 1
   // http://www.8bit-era.cz/arduino-timer-interrupts-calculator.html
   // TIMER 1 for interrupt frequency 200 Hz:
   cli();      // stop interrupts
@@ -65,33 +65,35 @@ void setup()
 }
 void loop()
 {
-  cli(); // stop interrupts
+   cli(); // stop interrupts
 
-  centre();
 
-  sei(); // allow interrupts
+  moveDistance(5000, VERTICAL);
+  // centre();
 
-  knobRight.write(0);
-  knobLeft.write(0);
+   //sei(); // allow interrupts
 
-  //Move to far Right side to begin circle draw
-  SetpointR = CIRCLE_SIZE * CENTIMETRE;
+  // knobRight.write(0);
+  // knobLeft.write(0);
 
-  //wait for it to hopefully get there
-  delay(4000);
+  // //Move to far Right side to begin circle draw
+  // SetpointR = CIRCLE_SIZE * CENTIMETRE;
+
+  // //wait for it to hopefully get there
+  // delay(4000);
   
-  //set encoder to the
-  knobRight.write(CIRCLE_SIZE * CENTIMETRE);
-  knobLeft.write(0);
+  // //set encoder to the
+  // knobRight.write(CIRCLE_SIZE * CENTIMETRE);
+  // knobLeft.write(0);
 
-  for (int i = 0; i < RESOLUTION; i++)
-  {
+  // for (int i = 0; i < 10; i++)
+  // {
 
-    SetpointR = CIRCLE_SIZE * CENTIMETRE * cos(2 * PI * i / RESOLUTION);
-    Setpoint = CIRCLE_SIZE * CENTIMETRE * sin(2 * PI * i / RESOLUTION);
+  //   SetpointR = CIRCLE_SIZE * CENTIMETRE * cos(2 * PI * i / RESOLUTION);
+  //   Setpoint = CIRCLE_SIZE * CENTIMETRE * sin(2 * PI * i / RESOLUTION);
 
-    delay(50000 / RESOLUTION);
-  }
+  //   delay(50000 / RESOLUTION);
+  // }
 }
 
 ISR(TIMER1_COMPA_vect)
