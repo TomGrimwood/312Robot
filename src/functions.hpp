@@ -34,6 +34,12 @@ extern Encoder knobLeft;
 #define BACK 0
 #define DUTY_CYCLE_LIMIT 255
 
+#define LEFT_ENC_A 36
+#define LEFT_ENC_B 37
+
+#define RIGHT_ENC_A 34
+#define RIGHT_ENC_B 35
+
 
 void moveDistance(double distance, bool isVertical);
 

@@ -24,7 +24,7 @@ bool flag = true;
 
 PID myPID(&Input, &Output, &Setpoint, 3, 0, 0.1, DIRECT);
 PID myOtherPID(&InputR, &OutputR, &SetpointR, 3, 0, 0.1, DIRECT);
-Encoder knobLeft(2, 3);
+Encoder knobLeft(, 3);
 Encoder knobRight(3, 4);
 
 void setup()
@@ -51,16 +51,4 @@ void setup()
 void loop()
 {
 
-  thisSin = +CIRCLE_SIZE * CENTIMETRE * sin(millis() / 10000 * 2 * PI);
-
-  thisCos = +CIRCLE_SIZE * CENTIMETRE * cos(millis() / 10000 * 2 * PI);
-
-  moveDistance(thisSin - totalMovedX, HORIZONTAL);
-  Serial.print("MOVED HORIZONTAL ");
-  Serial.println(thisSin - totalMovedX);
-  totalMovedX = totalMovedX + thisSin;                              
-  moveDistance(thisCos - totalMovedY, VERTICAL);
-  Serial.print("MOVED VERTICAL ");
-  Serial.println(thisCos - totalMovedY);
-  totalMovedY = totalMovedY + thisCos;
 }
