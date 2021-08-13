@@ -69,11 +69,12 @@ void moveDistance(double distance, bool isVertical)
   {
     Input = knobLeft.read(); //get input (current encoder count), from encoder library
 
+
     if (myPID.Compute()) //Compute required output PWM (-255 - 255 range), Will return false if SAMPLE_TIMES duration has not been exceed (ms)
     {
       isVertical ? powerMotorsVertical() : powerMotorsHorizontal(); //If BOOLEAN is vertical is true, powerMotorsVertically, otherwise...
 
-      if (millis() > now + 300) //If 300ms has passed since last sample check
+      if (millis() > now + 45) //If 300ms has passed since last sample check
       {
         now = millis(); //update last sample check time to now
 
@@ -105,8 +106,6 @@ void centre()
   moveDistance(18600, 0); //
   moveDistance(12000, 1);
   //go to middle ( need to be fine tuned. )
-  knobLeft.write(0);
-  knobRight.write(0);
 }
 
 void moveMotors()

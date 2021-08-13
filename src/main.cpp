@@ -21,8 +21,8 @@ int M2 = RIGHT_DIRECTION_PIN;
 
 PID myPID(&Input, &Output, &Setpoint, 3, 0, 0.1, DIRECT);
 PID myOtherPID(&InputR, &OutputR, &SetpointR, 3, 0, 0.1, DIRECT);
-Encoder knobLeft(35, 33);
-Encoder knobRight(2, 3);
+Encoder knobRight(18 , 19);
+Encoder knobLeft(2, 3);
 
 void setup()
 {
@@ -72,12 +72,12 @@ void loop()
   knobLeft.write(0);
 
   //Move to far Right side to begin circle draw
-  SetpointR = 0;
+  SetpointR = CIRCLE_RADIUS * CENTIMETRE;
   Setpoint = 0;
   sei();
 
   //wait for it to hopefully get there
-  delay(1000);
+  delay(3000);
 
 
 
@@ -86,8 +86,8 @@ void loop()
     for (int i = 0; i < RESOLUTION; i++)
     {
 
-      SetpointR = CIRCLE_RADIUS * CENTIMETRE * sin(2 * PI * i / RESOLUTION);
-      //Setpoint  = CIRCLE_RADIUS * CENTIMETRE * sin(2 * PI * i / RESOLUTION);
+      SetpointR = CIRCLE_RADIUS * CENTIMETRE * cos(2 * PI * i / RESOLUTION);
+      Setpoint  = CIRCLE_RADIUS * CENTIMETRE * sin(2 * PI * i / RESOLUTION);
 
       delay(15000 / RESOLUTION);
     }
@@ -96,11 +96,14 @@ void loop()
 
 ISR(TIMER1_COMPA_vect)
 {
-  Input = knobLeft.read(); 
-  InputR = knobRight.read();
+  InputR = knobRight.read(); 
+  Input = knobLeft.read();
 
   myOtherPID.Compute();
+  myPID.Compute();
 
   digitalWrite(RIGHT_DIRECTION_PIN, OutputR > 0);
   analogWrite(RIGHT_PWM_PIN, abs(OutputR));
+    digitalWrite(LEFT_DIRECTION_PIN, Output < 0);
+  analogWrite(LEFT_PWM_PIN, abs(Output));
 }
