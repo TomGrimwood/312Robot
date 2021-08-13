@@ -5,10 +5,10 @@
 
 #define CENTIMETRE 1852 //encoder count for 1cm
 #define SQUARE_SIZE 3
-#define CIRCLE_RADIUS 3 //in centimetres
+#define CIRCLE_RADIUS 6 //in centimetres
 #define ROTATION 5000
 #define SAMPLE_TIME 1  //minimum time till PID recalculates  the  output (MilliSeconds)
-#define RESOLUTION 1000 //amount of pos recalculations of circle;
+#define RESOLUTION 10000 //amount of pos recalculations of circle;
 #define TRUE_FOR_CIRCLE 1
 
 double Setpoint, Input, Output;
@@ -21,7 +21,7 @@ int M2 = RIGHT_DIRECTION_PIN;
 
 PID myPID(&Input, &Output, &Setpoint, 3, 0, 0.1, DIRECT);
 PID myOtherPID(&InputR, &OutputR, &SetpointR, 3, 0, 0.1, DIRECT);
-Encoder knobLeft(LEFT_ENC_A, LEFT_ENC_B);
+Encoder knobLeft(35, 33);
 Encoder knobRight(2, 3);
 
 void setup()
@@ -77,11 +77,9 @@ void loop()
   sei();
 
   //wait for it to hopefully get there
-  delay(4000);
+  delay(1000);
 
-  //set encoder to the
-  knobRight.write(0);
-  knobLeft.write(0);
+
 
   while (1)
   {
@@ -91,7 +89,7 @@ void loop()
       SetpointR = CIRCLE_RADIUS * CENTIMETRE * sin(2 * PI * i / RESOLUTION);
       //Setpoint  = CIRCLE_RADIUS * CENTIMETRE * sin(2 * PI * i / RESOLUTION);
 
-      delay(20000 / RESOLUTION);
+      delay(15000 / RESOLUTION);
     }
   }
 }
