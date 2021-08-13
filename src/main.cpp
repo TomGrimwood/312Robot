@@ -5,11 +5,11 @@
 
 #define CENTIMETRE 1852 //encoder count for 1cm
 #define SQUARE_SIZE 3
-#define CIRCLE_SIZE 3 //in centimetres
+#define CIRCLE_RADIUS 3 //in centimetres
 #define ROTATION 5000
 #define SAMPLE_TIME 1  //minimum time till PID recalculates  the  output (MilliSeconds)
-#define RESOLUTION 100 //amount of pos recalculations of circle;
-#define TRUE_FOR_CIRCLE 0
+#define RESOLUTION 1000 //amount of pos recalculations of circle;
+#define TRUE_FOR_CIRCLE 1
 
 double Setpoint, Input, Output;
 double SetpointR, InputR, OutputR;
@@ -21,8 +21,8 @@ int M2 = RIGHT_DIRECTION_PIN;
 
 PID myPID(&Input, &Output, &Setpoint, 3, 0, 0.1, DIRECT);
 PID myOtherPID(&InputR, &OutputR, &SetpointR, 3, 0, 0.1, DIRECT);
-Encoder knobLeft(2, 3);
-Encoder knobRight(3, 4);
+Encoder knobLeft(LEFT_ENC_A, LEFT_ENC_B);
+Encoder knobRight(2, 3);
 
 void setup()
 {
@@ -42,7 +42,7 @@ void setup()
   TCCR1B |= (0 << CS12) | (1 << CS11) | (0 << CS10);
   // enable timer compare interrupt
   TIMSK1 |= (1 << OCIE1A);
-  sei(); // allow interrupts
+
 #endif
 
   pinMode(LEFT_KILL_PIN, INPUT);
@@ -65,39 +65,44 @@ void setup()
 }
 void loop()
 {
-   cli(); // stop interrupts
 
+  centre();
 
-  moveDistance(5000, VERTICAL);
-  // centre();
+  knobRight.write(0);
+  knobLeft.write(0);
 
-   //sei(); // allow interrupts
+  //Move to far Right side to begin circle draw
+  SetpointR = 0;
+  Setpoint = 0;
+  sei();
 
-  // knobRight.write(0);
-  // knobLeft.write(0);
+  //wait for it to hopefully get there
+  delay(4000);
 
-  // //Move to far Right side to begin circle draw
-  // SetpointR = CIRCLE_SIZE * CENTIMETRE;
+  //set encoder to the
+  knobRight.write(0);
+  knobLeft.write(0);
 
-  // //wait for it to hopefully get there
-  // delay(4000);
-  
-  // //set encoder to the
-  // knobRight.write(CIRCLE_SIZE * CENTIMETRE);
-  // knobLeft.write(0);
+  while (1)
+  {
+    for (int i = 0; i < RESOLUTION; i++)
+    {
 
-  // for (int i = 0; i < 10; i++)
-  // {
+      SetpointR = CIRCLE_RADIUS * CENTIMETRE * sin(2 * PI * i / RESOLUTION);
+      //Setpoint  = CIRCLE_RADIUS * CENTIMETRE * sin(2 * PI * i / RESOLUTION);
 
-  //   SetpointR = CIRCLE_SIZE * CENTIMETRE * cos(2 * PI * i / RESOLUTION);
-  //   Setpoint = CIRCLE_SIZE * CENTIMETRE * sin(2 * PI * i / RESOLUTION);
-
-  //   delay(50000 / RESOLUTION);
-  // }
+      delay(20000 / RESOLUTION);
+    }
+  }
 }
 
 ISR(TIMER1_COMPA_vect)
 {
+  Input = knobLeft.read(); 
+  InputR = knobRight.read();
 
-  moveMotors();
+  myOtherPID.Compute();
+
+  digitalWrite(RIGHT_DIRECTION_PIN, OutputR > 0);
+  analogWrite(RIGHT_PWM_PIN, abs(OutputR));
 }

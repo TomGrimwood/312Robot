@@ -99,11 +99,11 @@ void moveDistance(double distance, bool isVertical)
 void centre()
 {
 
-  moveDistance(-30000, 0); //
-  moveDistance(-30000, 1);
+  moveDistance(-32000, HORIZONTAL); //
+  moveDistance(-30000, VERTICAL);
   //GO bottom left
-  moveDistance(15000, 0); //
-  moveDistance(15000, 1);
+  moveDistance(18600, 0); //
+  moveDistance(12000, 1);
   //go to middle ( need to be fine tuned. )
   knobLeft.write(0);
   knobRight.write(0);
