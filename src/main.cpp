@@ -3,12 +3,14 @@
 #include <PID_v1.h>
 #include <functions.hpp>
 
+#define TIME_TO_DRAW 20000
 #define CENTIMETRE 1852 //encoder count for 1cm
+#define CENTIMETRE_CIRCLE 2646 //encoder count for 1cm
 #define SQUARE_SIZE 3
 #define CIRCLE_RADIUS 6 //in centimetres
 #define ROTATION 5000
 #define SAMPLE_TIME 1  //minimum time till PID recalculates  the  output (MilliSeconds)
-#define RESOLUTION 10000 //amount of pos recalculations of circle;
+#define RESOLUTION 20000 //amount of pos recalculations of circle;
 #define TRUE_FOR_CIRCLE 1
 
 double Setpoint, Input, Output;
@@ -68,11 +70,12 @@ void loop()
 
   centre();
 
+  
   knobRight.write(0);
   knobLeft.write(0);
 
   //Move to far Right side to begin circle draw
-  SetpointR = CIRCLE_RADIUS * CENTIMETRE;
+  SetpointR = CIRCLE_RADIUS * CENTIMETRE_CIRCLE;
   Setpoint = 0;
   sei();
 
@@ -86,10 +89,10 @@ void loop()
     for (int i = 0; i < RESOLUTION; i++)
     {
 
-      SetpointR = CIRCLE_RADIUS * CENTIMETRE * cos(2 * PI * i / RESOLUTION);
-      Setpoint  = CIRCLE_RADIUS * CENTIMETRE * sin(2 * PI * i / RESOLUTION);
+      SetpointR = CIRCLE_RADIUS * CENTIMETRE_CIRCLE * cos(2 * PI * i / RESOLUTION);
+      Setpoint  = CIRCLE_RADIUS * CENTIMETRE_CIRCLE * sin(2 * PI * i / RESOLUTION);
 
-      delay(15000 / RESOLUTION);
+      delay(TIME_TO_DRAW / RESOLUTION);
     }
   }
 }
