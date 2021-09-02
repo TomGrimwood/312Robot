@@ -54,7 +54,7 @@ bool checkForAllMoves() //checks if any kill switches are triggered.
           !digitalRead(DOWN_KILL_PIN));
 }
 
-void moveDistance(double distance, bool isVertical)
+void moveDistance(double distance, bool isVertical) //move set distance (+ve or -ve) in direction (vertical/horizontal)
 {
 
   unsigned long now = millis(); //Get current time at function start
@@ -69,7 +69,6 @@ void moveDistance(double distance, bool isVertical)
   {
     Input = knobLeft.read(); //get input (current encoder count), from encoder library
 
-
     if (myPID.Compute()) //Compute required output PWM (-255 - 255 range), Will return false if SAMPLE_TIMES duration has not been exceed (ms)
     {
       isVertical ? powerMotorsVertical() : powerMotorsHorizontal(); //If BOOLEAN is vertical is true, powerMotorsVertically, otherwise...
@@ -78,7 +77,7 @@ void moveDistance(double distance, bool isVertical)
       {
         now = millis(); //update last sample check time to now
 
-        if (Input == encoderPrevious && abs(Setpoint - Input) < 50) //if The encoder reading has not changed in the last 300ms (STALLED), and the error is within 50 encoder readings of desired.
+        if (Input == encoderPrevious && abs(Setpoint - Input) < ENCODER_CLOSE_ENOUGH) //if The encoder reading has not changed in the last 300ms (STALLED), and the error is within 50 encoder readings of desired.
         {
           //Serial.print("Not ");
           break; //exit the while loop and finish the moveDistance function call
@@ -97,50 +96,36 @@ void moveDistance(double distance, bool isVertical)
   analogWrite(RIGHT_PWM_PIN, 0);
 }
 
-void centre()
+void centre() //go to the middle(ish) of the board
 {
 
-  moveDistance(-32000, HORIZONTAL); //
-  moveDistance(-30000, VERTICAL);
+  moveDistance(-32000, HORIZONTAL); //far left
+  moveDistance(-32000, VERTICAL); //far bottom
   //GO bottom left
-  moveDistance(18600, 0); //
-  moveDistance(12000, 1);
-  //go to middle ( need to be fine tuned. )
+  moveDistance(18600, 0); //middle across
+  moveDistance(12000, 1); //middle up
+
 }
 
-void moveMotors()
+void moveMotors() //used for circle drawing
 {
 
-  myPID.Compute();
-  myOtherPID.Compute();
+  myPID.Compute(); //calculates PID output from current positon, desired position etc.
+  myOtherPID.Compute(); //calcultaes for both axis
 
-  if (OutputR > 0)
-  {
-    digitalWrite(RIGHT_DIRECTION_PIN, HIGH);
-  }
-  else
-  {
-    digitalWrite(RIGHT_DIRECTION_PIN, LOW);
-  }
+  digitalWrite(RIGHT_DIRECTION_PIN, OutputR > 0); //sets direction depending if output is + or -
 
-  if (Output > 0)
-  {
-    digitalWrite(LEFT_DIRECTION_PIN, HIGH);
-  }
-  else
-  {
-    digitalWrite(LEFT_DIRECTION_PIN, LOW);
-  }
+  digitalWrite(LEFT_DIRECTION_PIN, Output < 0);
 
-  if (checkForAllMoves())
+  if (checkForAllMoves()) //if no kill switches are triggered
   {
-    analogWrite(LEFT_PWM_PIN, abs(Output));
+    analogWrite(LEFT_PWM_PIN, abs(Output)); //outputs PWM duty cycle to pins
     analogWrite(RIGHT_PWM_PIN, abs(OutputR));
   }
 
-  else
+  else // kill switches are triggered
   {
-     analogWrite(LEFT_PWM_PIN, 0);
-     analogWrite(RIGHT_PWM_PIN, 0);
+    analogWrite(LEFT_PWM_PIN, 0);     //kill motors
+    analogWrite(RIGHT_PWM_PIN, 0);
   }
 }

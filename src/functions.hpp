@@ -37,14 +37,7 @@ extern Encoder knobLeft, knobRight;
 #define FORWARD 1
 #define BACK 0
 #define DUTY_CYCLE_LIMIT 255
-
-
-#define LEFT_ENC_A 37
-#define LEFT_ENC_B 36
-
-#define RIGHT_ENC_A 34
-#define RIGHT_ENC_B 35
-
+#define ENCODER_CLOSE_ENOUGH 40
 
 void moveDistance(double distance, bool isVertical);
 void powerMotorsVertical();

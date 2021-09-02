@@ -4,13 +4,13 @@
 #include <functions.hpp>
 
 #define TIME_TO_DRAW 20000
-#define CENTIMETRE 1852 //encoder count for 1cm
+#define CENTIMETRE 1852        //encoder count for 1cm
 #define CENTIMETRE_CIRCLE 2646 //encoder count for 1cm
-#define SQUARE_SIZE 3
-#define CIRCLE_RADIUS 6 //in centimetres
+#define SQUARE_SIZE 7
+#define CIRCLE_RADIUS 15 //in centimetres
 #define ROTATION 5000
-#define SAMPLE_TIME 1  //minimum time till PID recalculates  the  output (MilliSeconds)
-#define RESOLUTION 20000 //amount of pos recalculations of circle;
+#define SAMPLE_TIME 5    //minimum time till PID recalculates  the  output (MilliSeconds)
+#define RESOLUTION 10000 //amount of pos recalculations of circle;
 #define TRUE_FOR_CIRCLE 1
 
 double Setpoint, Input, Output;
@@ -21,10 +21,10 @@ int M1 = LEFT_DIRECTION_PIN;
 int E2 = RIGHT_PWM_PIN;
 int M2 = RIGHT_DIRECTION_PIN;
 
-PID myPID(&Input, &Output, &Setpoint, 3, 0, 0.1, DIRECT);
-PID myOtherPID(&InputR, &OutputR, &SetpointR, 3, 0, 0.1, DIRECT);
-Encoder knobRight(18 , 19);
-Encoder knobLeft(2, 3);
+PID myPID(&Input, &Output, &Setpoint, 3, 0, 0.1, DIRECT);         //create left motor PID class
+PID myOtherPID(&InputR, &OutputR, &SetpointR, 3, 0, 0.1, DIRECT); //create right motor PID class
+Encoder knobRight(18, 19);                                        //create encoder class from pins 18,19
+Encoder knobLeft(2, 3);                                           //create encoder class from pins 2,3
 
 void setup()
 {
@@ -66,11 +66,11 @@ void setup()
   myOtherPID.SetControllerDirection(1);
 }
 void loop()
+
 {
 
   centre();
 
-  
   knobRight.write(0);
   knobLeft.write(0);
 
@@ -82,31 +82,29 @@ void loop()
   //wait for it to hopefully get there
   delay(3000);
 
-
-
-  while (1)
+  for (int i = 0; i < RESOLUTION + 100; i++) // +100 to definetley close out the circle
   {
-    for (int i = 0; i < RESOLUTION; i++)
-    {
+    /*
+    
+    executes 1 and a bit cycles of a sin and cosine
+    wave, drawn indepently on each axis, resulting
+    in a circle being drawn. duration is TIME_TO_DRAW (ms),
+    circle is split into RESOLUTION chunks, with TIME_TO_DRAW/RESOLUTION
+    amount of time to draw each segment, given time to complete the tiny
+    move is smaller than time it has to complete the movement, this works well.
 
-      SetpointR = CIRCLE_RADIUS * CENTIMETRE_CIRCLE * cos(2 * PI * i / RESOLUTION);
-      Setpoint  = CIRCLE_RADIUS * CENTIMETRE_CIRCLE * sin(2 * PI * i / RESOLUTION);
+                      */
+    SetpointR = CIRCLE_RADIUS * CENTIMETRE_CIRCLE * cos(2 * PI * i / RESOLUTION);
+    Setpoint = CIRCLE_RADIUS * CENTIMETRE_CIRCLE * sin(2 * PI * i / RESOLUTION);
 
-      delay(TIME_TO_DRAW / RESOLUTION);
-    }
+    delay(TIME_TO_DRAW / RESOLUTION);
+
   }
 }
 
 ISR(TIMER1_COMPA_vect)
 {
-  InputR = knobRight.read(); 
+  InputR = knobRight.read();
   Input = knobLeft.read();
-
-  myOtherPID.Compute();
-  myPID.Compute();
-
-  digitalWrite(RIGHT_DIRECTION_PIN, OutputR > 0);
-  analogWrite(RIGHT_PWM_PIN, abs(OutputR));
-    digitalWrite(LEFT_DIRECTION_PIN, Output < 0);
-  analogWrite(LEFT_PWM_PIN, abs(Output));
+  moveMotors();
 }
