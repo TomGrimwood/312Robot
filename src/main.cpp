@@ -7,7 +7,7 @@
 #define CENTIMETRE 1852        //encoder count for 1cm
 #define CENTIMETRE_CIRCLE 2646 //encoder count for 1cm
 #define SQUARE_SIZE 7
-#define CIRCLE_RADIUS 15 //in centimetres
+#define CIRCLE_RADIUS 4 //in centimetres
 #define ROTATION 5000
 #define SAMPLE_TIME 5    //minimum time till PID recalculates  the  output (MilliSeconds)
 #define RESOLUTION 10000 //amount of pos recalculations of circle;
@@ -92,13 +92,11 @@ void loop()
     circle is split into RESOLUTION chunks, with TIME_TO_DRAW/RESOLUTION
     amount of time to draw each segment, given time to complete the tiny
     move is smaller than time it has to complete the movement, this works well.
-
-                      */
+   */
     SetpointR = CIRCLE_RADIUS * CENTIMETRE_CIRCLE * cos(2 * PI * i / RESOLUTION);
     Setpoint = CIRCLE_RADIUS * CENTIMETRE_CIRCLE * sin(2 * PI * i / RESOLUTION);
 
     delay(TIME_TO_DRAW / RESOLUTION);
-
   }
 }
 
